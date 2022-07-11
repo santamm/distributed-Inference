@@ -18,7 +18,7 @@ Asynchronous: instead of directly returning a prediction the model service will 
 
 The solution proposed is depicted below:
 
-![Untitled](NetMind%20Inference%20platform%20description%20(draft)%20b1e9428e4ace4304afa1214410337191/Untitled.png)
+![Untitled](Untitled.png)
 
 ## Process Description
 
@@ -44,7 +44,7 @@ async def submit(query: Query):
 Below an example of a FastAPI call to retrieve model predictions:
 
 ```python
-@app.get('/result/{task_id}', response_model=Prediction, status_code=200, 
+@app.get('/result/{task_id}', response_model=Prediction, status_code=200,
 	responses={202: {'model': Task, 'description': 'Accepted: Not Ready'}})
 async def predict_result(task_id: str):
     """Fetch result for given task_id"""
@@ -74,14 +74,14 @@ celery_netmind
 │   ├───ml_models
 │   │   │   <model-1 subdir>
 │   │   │   <model-2 subdir>
-|   |   |   . . . . . 
+|   |   |   . . . . .
 |   │   │   <model-n subdir>
 |
 ```
 
-- *app.py*: FastAPI application including route definitions.
-- 
-- *test_client.py*: Script used for testing the set-up. We’ll cover this in more detail later.
+- _app.py_: FastAPI application including route definitions.
+-
+- _test_client.py_: Script used for testing the set-up. We’ll cover this in more detail later.
 - *celery_task_app\tasks.py:* Contains Celery task definition, specifically the prediction task in our case*.*
 - *celery_task_app\worker.py:* Defines the celery app instance and associated config.
 - *celery_task_app\ml_models\models.py:* Machine learning models wrapper classese used to load pretrained models and serve predictions.
@@ -118,30 +118,30 @@ rabbitmq-server
 
 ### Redis
 
-```bash
+````bash
 redis-server
 86827:C 08 Jul 2022 16:24:10.202 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
 86827:C 08 Jul 2022 16:24:10.202 # Redis version=7.0.0, bits=64, commit=00000000, modified=0, pid=86827, just started
 86827:C 08 Jul 2022 16:24:10.202 # Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf
 86827:M 08 Jul 2022 16:24:10.202 * Increased maximum number of open files to 10032 (it was originally set to 2560).
 86827:M 08 Jul 2022 16:24:10.202 * monotonic clock: POSIX clock_gettime
-                _._                                                  
-           _.-``__ ''-._                                             
+                _._
+           _.-``__ ''-._
       _.-``    `.  `_.  ''-._           Redis 7.0.0 (00000000/0) 64 bit
-  .-`` .-```.  ```\/    _.,_ ''-._                                  
+  .-`` .-```.  ```\/    _.,_ ''-._
  (    '      ,       .-`  | `,    )     Running in standalone mode
  |`-._`-...-` __...-.``-._|'` _.-'|     Port: 6379
  |    `-._   `._    /     _.-'    |     PID: 86827
-  `-._    `-._  `-./  _.-'    _.-'                                   
- |`-._`-._    `-.__.-'    _.-'_.-'|                                  
- |    `-._`-._        _.-'_.-'    |           https://redis.io       
-  `-._    `-._`-.__.-'_.-'    _.-'                                   
- |`-._`-._    `-.__.-'    _.-'_.-'|                                  
- |    `-._`-._        _.-'_.-'    |                                  
-  `-._    `-._`-.__.-'_.-'    _.-'                                   
-      `-._    `-.__.-'    _.-'                                       
-          `-._        _.-'                                           
-              `-.__.-'                                               
+  `-._    `-._  `-./  _.-'    _.-'
+ |`-._`-._    `-.__.-'    _.-'_.-'|
+ |    `-._`-._        _.-'_.-'    |           https://redis.io
+  `-._    `-._`-.__.-'_.-'    _.-'
+ |`-._`-._    `-.__.-'    _.-'_.-'|
+ |    `-._`-._        _.-'_.-'    |
+  `-._    `-._`-.__.-'_.-'    _.-'
+      `-._    `-.__.-'    _.-'
+          `-._        _.-'
+              `-.__.-'
 
 86827:M 08 Jul 2022 16:24:10.204 # WARNING: The TCP backlog setting of 511 cannot be enforced because kern.ipc.somaxconn is set to the lower value of 128.
 86827:M 08 Jul 2022 16:24:10.204 # Server initialized
@@ -152,7 +152,7 @@ redis-server
 86827:M 08 Jul 2022 16:24:10.204 * Done loading RDB, keys loaded: 37, keys expired: 0.
 86827:M 08 Jul 2022 16:24:10.204 * DB loaded from disk: 0.000 seconds
 86827:M 08 Jul 2022 16:24:10.204 * Ready to accept connections
-```
+````
 
 ### Celery workers:
 
@@ -175,19 +175,19 @@ if __name__ == '__main__':
 celery -A celery_tasks worker -l INFO
 
 -------------- celery@Maurizios-MacBook-Pro.local v5.0.5 (singularity)
---- ***** ----- 
+--- ***** -----
 -- ******* ---- macOS-12.4-arm64-arm-64bit 2022-07-10 16:35:40
-- *** --- * --- 
+- *** --- * ---
 - ** ---------- [config]
 - ** ---------- .> app:         hf_model:0x104b0b430
 - ** ---------- .> transport:   amqp://guest:**@localhost:5672//
 - ** ---------- .> results:     redis://localhost/
 - *** --- * --- .> concurrency: 8 (prefork)
 -- ******* ---- .> task events: OFF (enable -E to monitor tasks in this worker)
---- ***** ----- 
+--- ***** -----
  -------------- [queues]
                 .> celery           exchange=celery(direct) key=celery
-                
+
 
 [tasks]
   . celery_tasks.tasks.distilbart-cnn-12-6
@@ -319,7 +319,7 @@ taskid = netmind_inference("The goal of life is [MASK].", model_id, api_token)
 def netmind_retrieve(task_id, model_id, api_token):
 	headers = {"Authorization": f"Bearer {api_token}"}
 	API_URL = f"https://api-inference.netmind.com/models/result/{model_id}"
-	
+
 	attempts = 0
 	result = None
 	while attempts < max_attempts:
@@ -355,14 +355,14 @@ A full description and implementation of this approach can be found [here](https
 
 # References
 
-[*Celery - Distributed Task Queue](https://docs.celeryq.dev/en/stable/).*
+[\*Celery - Distributed Task Queue](https://docs.celeryq.dev/en/stable/).\*
 
-[*RabbitMQ is the most widely deployed open source message broker](https://www.rabbitmq.com/).*
+[\*RabbitMQ is the most widely deployed open source message broker](https://www.rabbitmq.com/).\*
 
-[*Serving ML Models in Production with FastAPI and Celery](https://towardsdatascience.com/deploying-ml-models-in-production-with-fastapi-and-celery-7063e539a5db).*
+[\*Serving ML Models in Production with FastAPI and Celery](https://towardsdatascience.com/deploying-ml-models-in-production-with-fastapi-and-celery-7063e539a5db).\*
 
-[*Scaling Celery workers with RabbitMQ on Kubernetes](https://learnk8s.io/scaling-celery-rabbitmq-kubernetes).*
+[\*Scaling Celery workers with RabbitMQ on Kubernetes](https://learnk8s.io/scaling-celery-rabbitmq-kubernetes).\*
 
-[*Redis: a vibrant, open source database.*](https://redis.io/)
+[_Redis: a vibrant, open source database._](https://redis.io/)
 
-*[Kubernetes Event-driven Autoscaling](https://keda.sh/).*
+_[Kubernetes Event-driven Autoscaling](https://keda.sh/)._
