@@ -1,0 +1,1 @@
+curl -X POST "http://localhost:8000/summarize/predict"  -d '{"data":"I have been waiting for netmind.ai my whole life."}'
