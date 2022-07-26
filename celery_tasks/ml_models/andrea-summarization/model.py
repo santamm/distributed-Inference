@@ -3,9 +3,15 @@ import os
 from pathlib import Path
 import pandas as pd
 import logging
+import json
 
-#MODEL_PATH = os.environ['MODEL_PATH']
-MODEL = "andrea-summarizer.z"
+
+
+with open(Path(os.path.dirname(__file__))/"model.json") as model_config:
+        model_dict = json.load(model_config)
+
+
+MODEL = model_dict['model_file_name']
 MODEL_PATH = Path(os.path.dirname(__file__))/MODEL
 
 class AndreaSummarize:
