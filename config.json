@@ -1,0 +1,4 @@
+{
+  "celery_broker_url": "pyamqp://guest@localhost//",
+  "celery_backend_url": "redis://localhost"
+}
