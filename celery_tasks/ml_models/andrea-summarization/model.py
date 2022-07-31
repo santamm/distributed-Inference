@@ -1,7 +1,6 @@
 import joblib
 import os
 from pathlib import Path
-import pandas as pd
 import logging
 import json
 
