@@ -4,15 +4,19 @@ from fastapi.responses import JSONResponse
 from celery.result import AsyncResult
 import logging
 
-from celery_tasks.tasks import andrea_summarize_predict
+from celery_tasks.tasks import andrea_summarize_predict, distilbart_summarize_predict, distilbart_summarize_predict_device
 #from models import Customer, Task, Prediction
 
 app = FastAPI()
 
+#class Payload(BaseModel):
+#  """ Features for prediction """
+#  data: str
+
 class Payload(BaseModel):
   """ Features for prediction """
   data: str
-
+  device: str
 
 class Task(BaseModel):
     """ Celery task representation """
@@ -27,11 +31,12 @@ class TextGeneration(BaseModel):
     result: str
 
 
+
 @app.post('/summarize/predict', response_model=Task, status_code=202)
 async def summarize(payload: Payload):
     """Create celery prediction task. Return task_id to client in order to retrieve result"""
-    task_id = andrea_summarize_predict.delay(payload.data)
-    #print(f"Task id: {task_id}")
+    task_id = distilbart_summarize_predict.delay(payload.data, payload.device)
+    print(f"Task id: {task_id}")
     return {'task_id': str(task_id), 'status': 'Processing'}
 
 

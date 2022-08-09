@@ -1,6 +1,8 @@
+import requests
 import time
-from celery_tasks.tasks import distilbart_summarize_predict
-import optparse
+
+base_uri = r'http://127.0.0.1:8000'
+#base_uri = 'https://40d9220970b5.ngrok.io'
 
 ARTICLE = """ New York (CNN)When Liana Barrientos was 23 years old, she got married in Westchester County, New York.
 A year later, she got married again in Westchester County, but to a different man and without divorcing her first husband.
@@ -21,18 +23,53 @@ Her eighth husband, Rashid Rajput, was deported in 2006 to his native Pakistan a
 If convicted, Barrientos faces up to four years in prison.  Her next court appearance is scheduled for May 18.
 """
 
-parser = optparse.OptionParser()
-parser.add_option('--tasks', '-n', type='int', action='store', dest='tasks')
-parser.add_option('--gpu', '-G', action="store_const", const='GPU', default='CPU', dest='device', help="Run on GPU")
-(options, args) = parser.parse_args()
-print(options)
-for i in range(int(options.tasks)):
-  time.sleep(0.01)
-  taskid = distilbart_summarize_predict.delay(ARTICLE, options.device)
-  # wait a bit
-# check if ready 
-#if result.ready():
-#  print("Result is ready:")
-#  print(result.get(timeout=1))
-#else:
-#  print("Result is not ready)")
+test_body = {"data":ARTICLE}
+
+
+def submit_testbed(data):
+  """"
+  
+  """
+  predict_task_uri = base_uri + '/summarize/predict'
+  task = requests.post(predict_task_uri, json=data)
+  print(f"Submitted task: {task.json()['task_id']}")
+  time.sleep(30)
+
+  
+  for i in range(10):
+    time.sleep(0.1)
+    task = requests.post(predict_task_uri, json=data)
+    print(f"Submitted task: {task.json()['task_id']}")
+
+
+
+
+
+def dummy_task(data, poll_interval=1, max_attempts=5):
+    # submit request
+    
+    predict_task_uri = base_uri + '/summarize/predict'
+    task = requests.post(predict_task_uri, json=data)
+    print(f"Submitted task: {task.json()['task_id']}")
+    task_id = task.json()['task_id']
+
+
+    predict_result_uri = base_uri + '/summarize/result/' + task_id
+    attempts = 0
+    result = None
+    while attempts < max_attempts:
+        attempts += 1
+        print(f"Retrieving results for {predict_result_uri}... ", end='')
+        result_response = requests.get(predict_result_uri)
+        print(result_response)
+        if result_response.status_code == 200:
+            print("reply retrieved: ")
+            result = result_response.json()
+            break
+        print("no luck.")
+        sleep(poll_interval)
+    return result
+
+
+if __name__ == '__main__':
+    submit_testbed(test_body)

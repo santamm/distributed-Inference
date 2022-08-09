@@ -1,1 +1,2 @@
-celery -A celery_tasks worker -l INFO
+celery -A celery_tasks worker -l INFO --detach --logfile ~/celery.log
+
