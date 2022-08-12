@@ -34,6 +34,123 @@ def get_device():
 
 from .celery import app
 
+class ProtagoTranslatorTask(Task):
+    """
+    Abstraction of Celery's Task class to support loading ML model.
+
+    """
+    
+    abstract = True
+
+    def __init__(self):
+        super().__init__()
+        self.model = None
+        self.device = None
+
+    def __call__(self, *args, **kwargs):
+        """
+        Load model on first call (i.e. first task processed)
+        Avoids the need to load model on each task request
+        """
+        device_requested = args[1] # can be either 'GPU' or 'CPU'
+        if not self.model or (device_requested=='GPU' and self.device is None):
+            logging.info('Loading Model...')
+            module_import = importlib.import_module(self.path[0])
+            model_obj = getattr(module_import, self.path[1])
+            self.model = model_obj()
+            #print(f"Requested on {device_requested}")
+            # this object should be loaded to GPU if available
+            #device = "cuda:0" if torch.cuda.is_available() else "cpu"
+            print(f"Model {type(self.model).__name__} loaded.")
+            #print(f"Model: {type(self.model.model).__name__}, Tokenizer: {type(self.model.tokenizer).__name__}")
+            #if (torch.cuda.device_count()>0) and device_requested=='GPU':
+            #    self.device = get_device()
+            #    print(f"Moving model to GPU: {self.device}")
+            #    self.model.model.to(self.device) 
+            #    self.model.tokenizer.to('cuda:0') 
+
+        return self.run(*args, **kwargs)
+# use a different task for each model to prevent a task to load different models in memory
+@app.task(ignore_result=False,
+          bind=True,
+          base=ProtagoTranslatorTask,
+          path=('celery_tasks.ml_models.protago-translator.model', 'ProtagoTranslator'),
+          name='{}.{}'.format(__name__, 'ProtagoTranslator')
+          )
+def protago_translate(self, data, device_request):
+    """
+    Essentially run method of PredictTask
+    """
+    result = self.model.gene(data)
+
+    return result
+
+
+class ProtagoGeneratorTask(Task):
+    """
+    Abstraction of Celery's Task class to support loading ML model.
+
+    """
+    
+    abstract = True
+
+    def __init__(self):
+        super().__init__()
+        self.model = None
+        self.device = None
+
+    def __call__(self, *args, **kwargs):
+        """
+        Load model on first call (i.e. first task processed)
+        Avoids the need to load model on each task request
+        """
+        device_requested = args[1] # can be either 'GPU' or 'CPU'
+        if not self.model or (device_requested=='GPU' and self.device is None):
+            logging.info('Loading Model...')
+            module_import = importlib.import_module(self.path[0])
+            model_obj = getattr(module_import, self.path[1])
+            self.model = model_obj()
+            #print(f"Requested on {device_requested}")
+            # this object should be loaded to GPU if available
+            #device = "cuda:0" if torch.cuda.is_available() else "cpu"
+            print(f"Model {type(self.model).__name__} loaded.")
+            #print(f"Model: {type(self.model.model).__name__}, Tokenizer: {type(self.model.tokenizer).__name__}")
+            #if (torch.cuda.device_count()>0) and device_requested=='GPU':
+            #    self.device = get_device()
+            #    print(f"Moving model to GPU: {self.device}")
+            #    self.model.model.to(self.device) 
+            #    self.model.tokenizer.to('cuda:0') 
+
+        return self.run(*args, **kwargs)
+# use a different task for each model to prevent a task to load different models in memory
+@app.task(ignore_result=False,
+          bind=True,
+          base=ProtagoGeneratorTask,
+          path=('celery_tasks.ml_models.protago-codegen.model', 'ProtagoGenerator'),
+          name='{}.{}'.format(__name__, 'ProtagoGenerator')
+          )
+def protago_generate(self, data, filling_method, device_request):
+    """
+    Essentially run method of PredictTask
+    """
+
+    #inputs = self.model.tokenizer(data, max_length=1024, return_tensors="pt")
+    #if self.device:
+    #        print(f"Moving inputs to GPU: {self.device}")
+    #        inputs.to(self.device)
+    #data = inputs['input_ids']
+    if filling_method=='function':
+        result = self.model.genFunction(data)
+    if filling_method=='lines':
+        result = self.model.genLines(data)
+    else:
+        result = self.model.gene(data)
+
+    return result
+
+
+
+
 class BartLargeCnnSummarizePredictTask(Task):
     """
     Abstraction of Celery's Task class to support loading ML model.

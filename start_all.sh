@@ -1,6 +1,8 @@
 #!/bin/bash
+
 # Stop current running celery servers
 echo "Stopping celery...."
+#
 ps auxww | grep 'celery_tasks worker' | awk '{print $2}' | xargs kill -9
 # stop current gunicorn
 echo "Stopping gunicorn....."
@@ -8,7 +10,7 @@ pkill gunicorn
 echo "Launch celery..."	
 # launch celery 
 # -P eventlet required to use GPUs in celery tasks (https://docs.celeryq.dev/en/stable/userguide/concurrency/eventlet.html)
-celery -A celery_tasks worker -P eventlet -c 12 -l INFO --detach --logfile ~/celery.log &
+celery -A celery_tasks worker -P eventlet -l INFO --detach --logfile ~/celery.log &
 sleep 1
 tail ~/celery.log
 echo
