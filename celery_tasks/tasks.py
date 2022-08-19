@@ -4,12 +4,14 @@ import numpy as np
 import logging
 import os
 
-import joblib
+#import joblib
 import importlib
 import base64
-from PIL import Image
+#from PIL import Image
 import io
 import pynvml
+
+from .celery import app
 
 
 # Cuda free memory
@@ -32,7 +34,7 @@ def get_device():
         return None
     
 
-from .celery import app
+
 
 class ProtagoTranslatorTask(Task):
     """
@@ -139,9 +141,11 @@ def protago_generate(self, data, filling_method, device_request):
     #        print(f"Moving inputs to GPU: {self.device}")
     #        inputs.to(self.device)
     #data = inputs['input_ids']
-    if filling_method=='function':
+    if filling_method=='Function':
+        print("Generating Function...")
         result = self.model.genFunction(data)
-    if filling_method=='lines':
+    if filling_method=='Two Lines':
+        print("Generating Two Lines...")
         result = self.model.genLines(data)
     else:
         result = self.model.gene(data)
@@ -373,7 +377,7 @@ def andrea_summarize_predict(self, data):
     """
     Essentially run method of PredictTask
     """
-    
+    print(self.name)
     summary = self.model.predict(data)
     return summary
 
