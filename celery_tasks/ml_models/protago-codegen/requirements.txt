@@ -1,0 +1,3 @@
+torch
+transformers
+git+https://github.com/finetuneanon/transformers@gpt-neo-localattention3-rp-b

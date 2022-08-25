@@ -1,4 +1,8 @@
-celery
+celery[eventlet]
 joblib
 Pillow
 redis
+pydantic
+uvicorn
+fastapi
+pynvml
