@@ -131,7 +131,7 @@ class ProtagoGeneratorTask(Task):
           path=('celery_tasks.ml_models.protago-codegen.model', 'ProtagoGenerator'),
           name='{}.{}'.format(__name__, 'ProtagoGenerator')
           )
-def protago_generate(self, data, filling_method, device_request):
+def protago_generate(self, data, filling_method):
     """
     Essentially run method of PredictTask
     """

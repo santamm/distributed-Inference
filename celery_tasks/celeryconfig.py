@@ -19,3 +19,9 @@ task_track_started = True
 result_expires = 604800  # one week
 task_reject_on_worker_lost = True
 #'task_queue_max_priority': 10
+
+task_routes = {
+    'celery_tasks.tasks.AndreaSummarize': {'queue': 'Summarization'},
+    'celery_tasks.tasks.ProtagoTranslator': {'queue': 'Translation'},
+    'celery_tasks.tasks.ProtagoGenerator': {'queue': 'Generation'}
+}

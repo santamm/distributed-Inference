@@ -2,8 +2,9 @@ import redis
 import optparse
 
 
-r = redis.Redis(host='6.tcp.ngrok.io', port=12937, db=0)
+#r = redis.Redis(host='6.tcp.ngrok.io', port=12937, db=0)
 
+r = redis.Redis(host='127.0.0.1', port=6379, db=0)
 
 def fech_task_result(taskid):
   """

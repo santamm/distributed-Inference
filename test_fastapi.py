@@ -98,20 +98,23 @@ If convicted, Barrientos faces up to four years in prison.  Her next court appea
 """
 
 
-test_body = {"data":ARTICLE, "device":"GPU"}
+test_body = {"data":ARTICLE, "device":"CPU"}
+#test_body = {"data":ARTICLE}
 
 def dummy_task(data, poll_interval=5, max_attempts=5):
     # submit request
     base_uri = os.environ["API_URI"]
     #base_uri = 'http://127.0.0.1:8000'
-    predict_task_uri = base_uri + '/summarize/predict'
+    predict_task_uri = base_uri + '/andrea/predict'
     task = requests.post(predict_task_uri, json=data)
     print(task)
     print(f"Submitted task: {task.json()['task_id']}")
     task_id = task.json()['task_id']
 
+    
 
-    predict_result_uri = base_uri + '/summarize/result/' + task_id
+
+    predict_result_uri = base_uri + '/andrea/result/' + task_id
     attempts = 0
     result = None
     while attempts < max_attempts:
@@ -129,5 +132,5 @@ def dummy_task(data, poll_interval=5, max_attempts=5):
 
 
 if __name__ == '__main__':
-    prediction = dummy_task(test_body, poll_interval=5)
+    prediction = dummy_task(test_body, poll_interval=10)
     print(prediction)

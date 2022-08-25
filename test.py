@@ -1,5 +1,5 @@
 import time
-from celery_tasks.tasks import distilbart_summarize_predict, andrea_summarize_predict, codegen_generate, codet5_predict, shinkaiGAN_generate
+from celery_tasks.tasks import andrea_summarize_predict, protago_translate, protago_generate
 #from PIL import Image
 #i#mport torchvision.transforms as T
 import base64
@@ -116,8 +116,11 @@ If convicted, Barrientos faces up to four years in prison.  Her next court appea
 
 #taskid = shinkaiGAN_generate.apply_async(tensor, serializer='pickle')
 
+ARTICLE2="""
+write a function that sorts the elements in a list
+"""
 
-taskid = distilbart_summarize_predict.delay(ARTICLE, "CPU")
+taskid = andrea_summarize_predict.delay(ARTICLE)
 
 print(f"Submitted task: {taskid}")
 # wait a bit
