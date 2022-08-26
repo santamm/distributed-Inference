@@ -2,13 +2,8 @@ from celery import Task
 import torch
 import numpy as np
 import logging
-import os
-
-#import joblib
 import importlib
-import base64
-#from PIL import Image
-import io
+#import base64
 import pynvml
 
 from .celery import app
@@ -25,16 +20,68 @@ def get_memory_free_MiB(gpu_index):
 def get_device():
     """
     Give a GPU to run the model
-    Returns the GPU with most memory available
+    Returns the index the GPU (index) with most memory available, -1 if no GPU is available
     """
     n_gpu = torch.cuda.device_count()
     if n_gpu>0:
-        return f"cuda:{np.argmin(torch.cuda.max_memory_allocated(device=device)/1e9 for device in range(n_gpu))}"
+        return np.argmin(torch.cuda.max_memory_allocated(device=device)/1e9 for device in range(n_gpu))
     else:
-        return None
+        return -1 # no GPU available
     
 
+class AndreaSummarizePredictTask(Task):
+    """
+    Abstraction of Celery's Task class to support loading ML model.
 
+    """
+    
+    abstract = True
+
+    def __init__(self):
+        super().__init__()
+        #self.tokenizer = None
+        self.model = None
+        self.device = -1 # device where the model is running (-1 for cpu, or GPU index)
+
+    def __call__(self, *args, **kwargs):
+        """
+        Load model on first call (i.e. first task processed)
+        Avoids the need to load model on each task request
+        """
+        on_device = args[1] # device where model was requested to run either 'CPU' or 'GPU'
+        if on_device == 'GPU':
+            device = get_device()
+            if device==-1:
+                return "GPU Not available. Please try to run on CPU."
+        else:
+            device = -1 # run on CPU
+            # you should make a case for when GPU is requested but not available
+        if (not self.model) or (self.model and device!=self.device):
+            logging.info('Loading Model...')
+            module_import = importlib.import_module(self.path[0])
+            model_obj = getattr(module_import, self.path[1])
+            self.model = model_obj(device)
+            self.device = device
+        logging.info('Model loaded')
+        return self.run(*args, **kwargs)
+
+# use a different task for each model to prevent a task to load different models in memory
+@app.task(ignore_result=False,
+          bind=True,
+          base=AndreaSummarizePredictTask,
+          #path=('celery_tasks/ml_models/andrea-summarization', 'andrea-summarization.z'),
+          path=('celery_tasks.ml_models.andrea-summarization.model', 'AndreaSummarize'),
+          name='{}.{}'.format(__name__, 'AndreaSummarize')
+          )
+def andrea_summarize_predict(self, data, on_device):
+    """
+    Essentially run method of PredictTask
+    data: text to translate
+    on_device: run model on device , can be 'CPU' or 'GPU'
+    """
+    logging.info(f"Requested Summarization on: {on_device}")
+    summary = self.model.predict(data)
+    return summary
 
 class ProtagoTranslatorTask(Task):
     """
@@ -54,12 +101,12 @@ class ProtagoTranslatorTask(Task):
         Load model on first call (i.e. first task processed)
         Avoids the need to load model on each task request
         """
-        device_requested = args[1] # can be either 'GPU' or 'CPU'
-        if not self.model or (device_requested=='GPU' and self.device is None):
+        on_device = args[1] # can be either 'GPU' or 'CPU'
+        if not self.model or (on_device=='GPU' and self.device is None):
             logging.info('Loading Model...')
             module_import = importlib.import_module(self.path[0])
             model_obj = getattr(module_import, self.path[1])
-            self.model = model_obj()
+            self.model = model_obj(on_device)
             #print(f"Requested on {device_requested}")
             # this object should be loaded to GPU if available
             #device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -151,7 +198,6 @@ def protago_generate(self, data, filling_method):
         result = self.model.gene(data)
 
     return result
-
 
 
 
@@ -337,49 +383,6 @@ def codegen_generate(self, data):
 
     prediction = self.model.predict(data)
     return prediction
-
-
-class AndreaSummarizePredictTask(Task):
-    """
-    Abstraction of Celery's Task class to support loading ML model.
-
-    """
-    
-    abstract = True
-
-    def __init__(self):
-        super().__init__()
-        #self.tokenizer = None
-        self.model = None
-
-    def __call__(self, *args, **kwargs):
-        """
-        Load model on first call (i.e. first task processed)
-        Avoids the need to load model on each task request
-        """
-        if not self.model:
-            logging.info('Loading Model...')
-            module_import = importlib.import_module(self.path[0])
-            model_obj = getattr(module_import, self.path[1])
-            self.model = model_obj()
-            logging.info('Model loaded')
-        return self.run(*args, **kwargs)
-
-# use a different task for each model to prevent a task to load different models in memory
-@app.task(ignore_result=False,
-          bind=True,
-          base=AndreaSummarizePredictTask,
-          #path=('celery_tasks/ml_models/andrea-summarization', 'andrea-summarization.z'),
-          path=('celery_tasks.ml_models.andrea-summarization.model', 'AndreaSummarize'),
-          name='{}.{}'.format(__name__, 'AndreaSummarize')
-          )
-def andrea_summarize_predict(self, data):
-    """
-    Essentially run method of PredictTask
-    """
-    print(self.name)
-    summary = self.model.predict(data)
-    return summary
 
 
 

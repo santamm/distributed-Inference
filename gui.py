@@ -6,7 +6,8 @@ import os
 from functools import partial
 
 
-api_uri = os.environ["API_URI"]
+#api_uri = os.environ["API_URI"]
+api_uri= "http://127.0.0.1:8000" 
 
 demo = gr.Blocks()
 
@@ -156,6 +157,7 @@ with demo:
         with gr.TabItem("Summarization"):
             with gr.Row():
                 with gr.Column():
+                  device = gr.Radio(('CPU', 'GPU'), label='Device')
                   sum_examples = gr.Dropdown(choices=['Example 1'], label="Choose an example or paste your text")
                   summarize_input = gr.Textbox(lines=20, interactive=True)
                 with gr.Column():
@@ -179,7 +181,7 @@ with demo:
     gen_examples.change(fn=change_function, inputs=gen_examples, outputs=code_input)
 
     translate_button.click(translate, inputs=translate_input, outputs=translate_output)
-    summarize_button.click(summarize, inputs=summarize_input, outputs=summarize_output)
+    summarize_button.click(summarize, inputs=[summarize_input, device], outputs=summarize_output)
     generate_button.click(generate, inputs=[code_input, filling_method], outputs=generate_output)
 
 

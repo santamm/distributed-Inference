@@ -3,9 +3,6 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from celery import Celery
 from celery.result import AsyncResult
-#import os
-#from pathlib import Path
-#import json
 import logging
 
 
@@ -13,8 +10,6 @@ import logging
 app = Celery()
 app.config_from_object('celery_tasks.celeryconfig')
 
-#from celery_tasks.tasks import protago_translate, protago_generate, distilbart_summarize_predict, distilbart_summarize_predict_device
-#from models import Customer, Task, Prediction
 
 api = FastAPI()
 
@@ -51,6 +46,7 @@ class TextGeneration(BaseModel):
 async def translate(payload: Payload):
     """Create celery prediction task. Return task_id to client in order to retrieve result"""
     #task_id = protago_translate.delay(payload.data, payload.device)
+    print(f"Requested summarization on {payload.device}")
     task_id = app.send_task('celery_tasks.tasks.ProtagoTranslator', [payload.data, payload.device])
     print(f"Task id: {task_id}")
     return {'task_id': str(task_id), 'status': 'Processing'}
@@ -122,7 +118,7 @@ async def andrea_summarize(payload: Payload):
     
     # Call task name celery_tasks.tasks.AndreaSummarize
     #celeryapp.tasks.append(
-    task_id = app.send_task('celery_tasks.tasks.AndreaSummarize', [payload.data])  # Send task by name
+    task_id = app.send_task('celery_tasks.tasks.AndreaSummarize', [payload.data, payload.device])  # Send task by name
     #)
     logging.info(f"Task Request sent {task_id }")
     
