@@ -6,9 +6,16 @@ import os
 
 class ProtagoGenerator:
 
-    def __init__(self):
+    def __init__(self, device=-1):
         self.tokenizer = AutoTokenizer.from_pretrained(os.path.dirname(__file__)+"/saved_model")
-        self.model = AutoModelForCausalLM.from_pretrained(os.path.dirname(__file__)+"/saved_model").half().eval().cuda()
+        self.model = AutoModelForCausalLM.from_pretrained(os.path.dirname(__file__)+"/saved_model")
+        if device>=0:
+            self.device = torch.device(f'cuda:{device}')
+            self.model.to(self.device)
+            self.model.half()
+        else:
+            self.device = 'cpu'
+        self.model.eval()
         self.maxLength = 200  # @param {type:"number"}
         self.temperature = 0.4  # @param {type:"number"}
         self.top_k = 50  # @param {type:"number"}
@@ -19,8 +26,9 @@ class ProtagoGenerator:
 
     def gene(self, text):
         print('Code Input: {}'.format(text))
-        tokens = self.tokenizer(text, return_tensors="pt").input_ids
-        generated_tokens = self.model.generate(tokens.long().cuda(), use_cache=True, do_sample=True, top_k=50,
+        tokens = self.tokenizer(text, return_tensors="pt").input_ids.long()
+        tokens.to(self.device)
+        generated_tokens = self.model.generate(tokens, use_cache=True, do_sample=True, top_k=50,
                                                temperature=0.3, top_p=0.9, repetition_penalty=1.125, min_length=1,
                                                max_length=len(tokens[0]) + 400,
                                                pad_token_id=self.tokenizer.eos_token_id)
@@ -31,8 +39,9 @@ class ProtagoGenerator:
 
     def genFunction(self, text):
         print('Code Input: {}'.format(text))
-        tokens = self.tokenizer(text, return_tensors='pt').input_ids
-        generated_tokens = self.model.generate(tokens.long().cuda(), use_cache=True, do_sample=True, top_k=50,
+        tokens = self.tokenizer(text, return_tensors='pt').input_ids.long()
+        tokens.to(self.device)
+        generated_tokens = self.model.generate(tokens, use_cache=True, do_sample=True, top_k=50,
                                                temperature=0.3, top_p=0.9, repetition_penalty=1.125, min_length=1,
                                                max_length=len(tokens[0]) + 400,
                                                pad_token_id=self.tokenizer.eos_token_id)
@@ -44,8 +53,9 @@ class ProtagoGenerator:
 
     def genLines(self, text):
         print('Code Input: {}'.format(text))
-        tokens = self.tokenizer(text, return_tensors='pt').input_ids
-        generated_tokens = self.model.generate(tokens.long().cuda(), use_cache=True, do_sample=True, top_k=50,
+        tokens = self.tokenizer(text, return_tensors='pt').input_ids.long()
+        tokens.to(self.device)
+        generated_tokens = self.model.generate(tokens, use_cache=True, do_sample=True, top_k=50,
                                                temperature=0.3, top_p=0.9, repetition_penalty=1.125, min_length=1,
                                                max_length=len(tokens[0]) + 400,
                                                pad_token_id=self.tokenizer.eos_token_id)

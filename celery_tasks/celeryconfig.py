@@ -21,7 +21,8 @@ task_reject_on_worker_lost = True
 #'task_queue_max_priority': 10
 
 task_routes = {
-    'celery_tasks.tasks.AndreaSummarize': {'queue': 'Summarization'},
-    'celery_tasks.tasks.ProtagoTranslator': {'queue': 'Translation'},
-    'celery_tasks.tasks.ProtagoGenerator': {'queue': 'Generation'}
+    'celery_tasks.tasks_gpu.AndreaSummarize': {'queue': 'Summarization'},
+    'celery_tasks.tasks_gpu.ProtagoTranslator': {'queue': 'Translation'},
+    'celery_tasks.tasks_gpu.ProtagoTranslator': {'queue': 'Generation'},
+    'celery_tasks.tasks_cpu.*': {'queue': 'celery'}
 }

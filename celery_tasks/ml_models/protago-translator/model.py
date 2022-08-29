@@ -5,14 +5,18 @@ import os
 
 class ProtagoTranslator:
 
-    def __init__(self):
+    def __init__(self, device=-1):
         
         self.max_input_length = 128
         self.max_target_length = 128
         self.model_name_or_path = os.path.dirname(__file__)+'/m2m'
-        self.device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
+        #self.device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
         self.model = AutoModelForSeq2SeqLM.from_pretrained(self.model_name_or_path)
-        self.model.to(self.device)
+        if device>=0:
+            self.device = torch.device(f'cuda:{device}')
+            self.model.to(self.device)
+        else:
+            self.device = 'cpu'
         self.model.eval()
 
     def gene(self, text, source='en', target='zh'):

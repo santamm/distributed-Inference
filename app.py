@@ -45,9 +45,11 @@ class TextGeneration(BaseModel):
 @api.post('/protago_translate/predict', response_model=Task, status_code=202)
 async def translate(payload: Payload):
     """Create celery prediction task. Return task_id to client in order to retrieve result"""
-    #task_id = protago_translate.delay(payload.data, payload.device)
     print(f"Requested summarization on {payload.device}")
-    task_id = app.send_task('celery_tasks.tasks.ProtagoTranslator', [payload.data, payload.device])
+    if payload.device=='GPU':
+      task_id = app.send_task('celery_tasks.tasks_gpu.ProtagoTranslator', [payload.data])
+    else:
+      task_id = app.send_task('celery_tasks.tasks_cpu.ProtagoTranslator', [payload.data])
     print(f"Task id: {task_id}")
     return {'task_id': str(task_id), 'status': 'Processing'}
 
@@ -90,7 +92,10 @@ async def summarize_result(task_id: str):
 async def generate(payload: GenerationPayload):
     """Create celery prediction task. Return task_id to client in order to retrieve result"""
     #task_id = protago_generate.delay(payload.data, payload.filling_method, payload.device)
-    task_id = app.send_task('celery_tasks.tasks.ProtagoGenerator', [payload.data, payload.device])
+    if payload.device=='CPU':
+      task_id = app.send_task('celery_tasks.tasks_cpu.ProtagoGenerator', [payload.data, payload.filling_method])
+    else:
+      task_id = app.send_task('celery_tasks.tasks_gpu.ProtagoGenerator', [payload.data, payload.filling_method])
 
     print(f"Task id: {task_id}")
     return {'task_id': str(task_id), 'status': 'Processing'}
@@ -113,12 +118,12 @@ async def generate_result(task_id: str):
 @api.post('/andrea/predict', response_model=Task, status_code=202)
 async def andrea_summarize(payload: Payload):
     """Create celery prediction task. Return task_id to client in order to retrieve result"""
-    #task_id = andrea_summarize_predict.delay(payload.data)
-    #print(f"Task id: {task_id}")
-    
-    # Call task name celery_tasks.tasks.AndreaSummarize
-    #celeryapp.tasks.append(
-    task_id = app.send_task('celery_tasks.tasks.AndreaSummarize', [payload.data, payload.device])  # Send task by name
+
+    if payload.device=='GPU':
+      task_id = app.send_task('celery_tasks.tasks_gpu.AndreaSummarize', [payload.data])
+    else:
+      task_id = app.send_task('celery_tasks.tasks_cpu.AndreaSummarize', [payload.data])
+        # Send task by name
     #)
     logging.info(f"Task Request sent {task_id }")
     

@@ -20,7 +20,7 @@ class AndreaSummarize:
 
     """ Wrapper for loading and serving pre-trained model"""
 
-    def __init__(self, device):
+    def __init__(self, device=-1):
         """"
         device: device where inference was requested ('cuda:x' or None if device is cpu)
         """
