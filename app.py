@@ -8,7 +8,7 @@ import logging
 
 
 app = Celery()
-app.config_from_object('celery_tasks.celeryconfig')
+app.config_from_object('celeryconfig')
 
 
 api = FastAPI()

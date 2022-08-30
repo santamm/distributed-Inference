@@ -4,19 +4,19 @@ import numpy as np
 import logging
 import importlib
 #import base64
-#import pynvml
+import pynvml
 
 from .celery import app
 
 
 # Cuda free memory
-"""
+
 def get_memory_free_MiB(gpu_index):
     pynvml.nvmlInit()
     handle = pynvml.nvmlDeviceGetHandleByIndex(int(gpu_index))
     mem_info = pynvml.nvmlDeviceGetMemoryInfo(handle)
     return mem_info.free // 1024 ** 2
-"""
+
 
 def get_device():
     """
@@ -26,7 +26,7 @@ def get_device():
     # np.argmin(torch.cuda.max_memory_allocated(device=device)/1e9 for device in range(torch.cuda.device_count())) if torch.cuda.is_available() else -1
     n_gpu = torch.cuda.device_count()
     if n_gpu>0:
-        return np.argmin(torch.cuda.max_memory_allocated(device=device)/1e9 for device in range(n_gpu))
+        return np.argmax([get_memory_free_MiB(device) for device in range(n_gpu)])
     else:
         return -1 # no GPU available
     
@@ -167,7 +167,7 @@ class ProtagoGeneratorTask_GPU(Task):
             #print(f"Requested on {device_requested}")
             # this object should be loaded to GPU if available
             #device = "cuda:0" if torch.cuda.is_available() else "cpu"
-            print(f"Model {type(self.model).__name__} loaded on devoce {device}.")
+            print(f"Model {type(self.model).__name__} loaded on device 'cuda:{device}'.")
             #print(f"Model: {type(self.model.model).__name__}, Tokenizer: {type(self.model.tokenizer).__name__}")
             #if (torch.cuda.device_count()>0) and device_requested=='GPU':
             #    self.device = get_device()
