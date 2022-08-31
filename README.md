@@ -18,7 +18,7 @@ Asynchronous: instead of directly returning a prediction the model service will 
 
 The solution is depicted below:
 
-![Untitled](NetMind%20Inference%20Platform%20b1e9428e4ace4304afa1214410337191/Untitled.png)
+![netmind-inference-architecture.png](netmind-inference-architecture.png)
 
 ## API Calls
 
@@ -481,7 +481,7 @@ The app will show the following GUI, where you can test the models deployed:
 
  
 
-![netmind-gradio.png](NetMind%20Inference%20Platform%20b1e9428e4ace4304afa1214410337191/netmind-gradio.png)
+![netmind-gradio.png](netmind-gradio.png)
 
 # Further Developments
 
