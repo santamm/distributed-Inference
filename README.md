@@ -18,7 +18,7 @@ Asynchronous: instead of directly returning a prediction the model service will 
 
 The solution is depicted below:
 
-![Untitled](NetMind%20Inference%20Platform%20b1e9428e4ace4304afa1214410337191/Untitled.png)
+![Untitled](Untitled.png)
 
 ## API Calls
 
