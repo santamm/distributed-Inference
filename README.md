@@ -18,7 +18,7 @@ Asynchronous: instead of directly returning a prediction the model service will 
 
 The solution is depicted below:
 
-![Untitled](Untitled.png)
+![Untitled](NetMind%20Inference%20Platform%20b1e9428e4ace4304afa1214410337191/Untitled.png)
 
 ## API Calls
 
@@ -458,17 +458,30 @@ async def translate_result(task_id: str):
     return {'task_id': task_id, 'status': 'Success', 'result': str(result)}
 ```
 
-## Users API to run prediction tasks
+## Testing
 
-The first part is choosing which model to run:
+You can test the platform using a gradio interactive application:
+
+Run the following in the Node 1 machine:
 
 ```python
-ENDPOINT = https://api-inference.netmind.com/models/<MODEL_ID>
+gradio gui.py
 ```
 
-Below an example of Python code to run to submit a task:
+It should show the ports the applicaton is available, including a public one valid for 72 hours:
 
-and retrieve results:
+```bash
+Running on local URL:  http://127.0.0.1:7861/
+Running on public URL: https://18620.gradio.app
+
+This share link expires in 72 hours. For free permanent hosting, check out Spaces: https://huggingface.co/spaces
+```
+
+The app will show the following GUI, where you can test the models deployed:
+
+ 
+
+![netmind-gradio.png](NetMind%20Inference%20Platform%20b1e9428e4ace4304afa1214410337191/netmind-gradio.png)
 
 # Further Developments
 
