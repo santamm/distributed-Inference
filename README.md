@@ -1,8 +1,8 @@
-# NetMind Inference platform description (draft)
+# NetMind Inference platform
 
 # Intro
 
-This page walks through our proposal for the NetMind inference platform for serving ML models using Celery and FastAPI.
+This page describes the NetMind inference platform for serving ML models using Celery and FastAPI.
 
 Below is a summary of potential approaches for deploying (pre)trained models to production:
 
