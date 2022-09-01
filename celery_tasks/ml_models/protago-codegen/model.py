@@ -25,22 +25,22 @@ class ProtagoGenerator:
         self.repetition_penalty_slope = 3.33  # @param {type:"number"}
 
     def gene(self, text):
-        print('Code Input: {}'.format(text))
+        #print('Gene Code Input: {}'.format(text))
         tokens = self.tokenizer(text, return_tensors="pt").input_ids.long()
-        tokens.to(self.device)
+        tokens = tokens.to(self.device)
         generated_tokens = self.model.generate(tokens, use_cache=True, do_sample=True, top_k=50,
                                                temperature=0.3, top_p=0.9, repetition_penalty=1.125, min_length=1,
                                                max_length=len(tokens[0]) + 400,
                                                pad_token_id=self.tokenizer.eos_token_id)
         last_tokens = generated_tokens[0]
         generated_text = self.tokenizer.decode(last_tokens[:-1],skip_special_tokens=True)
-        print('Code Output: {}'.format(generated_text))
+        #print('Code Output: {}'.format(generated_text))
         return generated_text
 
     def genFunction(self, text):
-        print('Code Input: {}'.format(text))
+        #print('GenFunction Code Input: {}'.format(text))
         tokens = self.tokenizer(text, return_tensors='pt').input_ids.long()
-        tokens.to(self.device)
+        tokens = tokens.to(self.device)
         generated_tokens = self.model.generate(tokens, use_cache=True, do_sample=True, top_k=50,
                                                temperature=0.3, top_p=0.9, repetition_penalty=1.125, min_length=1,
                                                max_length=len(tokens[0]) + 400,
@@ -48,13 +48,14 @@ class ProtagoGenerator:
         last_tokens = generated_tokens[0]
         gene = self.tokenizer.decode(last_tokens[tokens.shape[1]:],skip_special_tokens=True)
         generated_text = text + gene.split('\n\n\n')[0]
-        print('Code Output: {}'.format(generated_text))
+        #print('Code Output: {}'.format(generated_text))
         return generated_text
 
     def genLines(self, text):
-        print('Code Input: {}'.format(text))
+        #print('genLines Code Input: {}'.format(text))
         tokens = self.tokenizer(text, return_tensors='pt').input_ids.long()
-        tokens.to(self.device)
+        #print(f"Moving tokens to {self.device}")
+        tokens = tokens.to(self.device)
         generated_tokens = self.model.generate(tokens, use_cache=True, do_sample=True, top_k=50,
                                                temperature=0.3, top_p=0.9, repetition_penalty=1.125, min_length=1,
                                                max_length=len(tokens[0]) + 400,
@@ -62,7 +63,7 @@ class ProtagoGenerator:
         last_tokens = generated_tokens[0]
         gene = self.tokenizer.decode(last_tokens[tokens.shape[1]:],skip_special_tokens=True)
         generated_text = text + '\n'.join(gene.split('\n')[0: 3])
-        print('Code Output: {}'.format(generated_text))
+        #print('Code Output: {}'.format(generated_text))
         return generated_text
 
 

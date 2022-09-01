@@ -116,16 +116,8 @@ class ProtagoGeneratorTask_CPU(Task):
             module_import = importlib.import_module(self.path[0])
             model_obj = getattr(module_import, self.path[1])
             self.model = model_obj()
-            #print(f"Requested on {device_requested}")
-            # this object should be loaded to GPU if available
-            #device = "cuda:0" if torch.cuda.is_available() else "cpu"
-            print(f"Model {type(self.model).__name__} loaded.")
-            #print(f"Model: {type(self.model.model).__name__}, Tokenizer: {type(self.model.tokenizer).__name__}")
-            #if (torch.cuda.device_count()>0) and device_requested=='GPU':
-            #    self.device = get_device()
-            #    print(f"Moving model to GPU: {self.device}")
-            #    self.model.model.to(self.device) 
-            #    self.model.tokenizer.to('cuda:0') 
+
+            print(f"Model {type(self.model).__name__} loaded on CPU.")
 
         return self.run(*args, **kwargs)
 # use a different task for each model to prevent a task to load different models in memory

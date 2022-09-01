@@ -4,10 +4,8 @@ import os
 import json
 from pathlib import Path
 
-
-
-broker_url = "pyamqp://guest@localhost//"
-result_backend = "redis://localhost"
+broker_url = "pyamqp://netmind:netmind@0.tcp.ngrok.io:10567//"
+result_backend = "redis://6.tcp.ngrok.io:12937"
 
 
 task_serializer =  'json'
@@ -23,6 +21,9 @@ task_reject_on_worker_lost = True
 task_routes = {
     'celery_tasks.tasks_gpu.AndreaSummarize': {'queue': 'Summarization'},
     'celery_tasks.tasks_gpu.ProtagoTranslator': {'queue': 'Translation'},
-    'celery_tasks.tasks_gpu.ProtagoTranslator': {'queue': 'Generation'},
-    'celery_tasks.tasks_cpu.*': {'queue': 'celery'}
+    'celery_tasks.tasks_gpu.ProtagoGenerator': {'queue': 'Generation'},
+    'celery_tasks.tasks_cpu.AndreaSummarize': {'queue': 'Summarization_cpu'},
+    'celery_tasks.tasks_cpu.ProtagoTranslator': {'queue': 'Translation_cpu'},
+    'celery_tasks.tasks_cpu.ProtagoGenerator': {'queue': 'Generation_cpu'}
+  #  'celery_tasks.tasks_cpu.*': {'queue': 'celery'}
 }
