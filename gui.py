@@ -14,11 +14,15 @@ demo = gr.Blocks()
 
 translate_uri = '/protago_translate/predict'
 translate_results_uri = '/protago_translate/result/'
-translate_description = """
-"""
+
 
 summarize_uri = '/andrea/predict'
 summarize_results_uri = '/andrea/result/'
+summarize_description = """
+The following model is an abstractive summarization model trained on the SummScreen ForeverDreaming dataset, consisting of community generated transcripts of many different genres of TV shows, matched with their respecrtive summaries taken from Wikipedia and TVMaze. This specific model was fine-tuned starting from checkpoints of a BART summarization model trained on the CNN/DailyMail dataset available on HuggingFace. The input sequence is 1024 and the output sequence 384. For each input transcript, we performed content selection on the input sequence based on the LexRank algorithm (with threshold 0.1) applied to the similarity matrix for all sentences in the transcript calculated using a SentenceBERT model multi-purpose model. The highest scoring sentences extracted in this way have been retained for each input transcript up to 1024 tokens, and then fed into the model for fine-tuning on abstractive summarization.
+"""
+
+
 generate_uri = '/protago_generate/predict'
 generate_results_uri = '/protago_generate/result/'
 generate_description = """
@@ -56,8 +60,6 @@ def submit_task(submit_uri, payload):
 
   return task_id
 
-
-
 def retrieve_task_results(retrieve_uri, taskid):
   """
   """
@@ -74,7 +76,7 @@ def retrieve_task_results(retrieve_uri, taskid):
   return status, reply_text
 
 
-def submit_interactive(submit_uri, retrieve_uri, payload, poll_interval=10, max_attempts=6):
+def submit_interactive(submit_uri, retrieve_uri, payload, poll_interval=1, max_attempts=60):
   """
   
 
@@ -118,13 +120,11 @@ def generate(data, filling_method, device='gpu'):
   """
   """
   payload = {'data':data, 'device':device, 'filling_method':filling_method}
-  return submit_interactive(generate_uri, generate_results_uri, payload)
+  return submit_interactive(generate_uri, generate_results_uri, payload, poll_interval=5, max_attempts=60)
 
 
-#summarize = partial(submit_interactive, '/andrea/predict', '/andrea/result/')
+#summarize = partial(submit_interactve, '/andrea/predict', '/andrea/result/')
 #generate = partial(submit_interactive, '/protago_generate/predict', '/protago_generate/result/')
-
-
 
 def change_textbox(choice):
     if choice == "Example 1":
@@ -142,11 +142,12 @@ def change_function(choice):
 
 
 with demo:
-    gr.Markdown("NetMind.AI Demo.")
+    gr.Markdown("<h1>NetMind.AI Demo.</h1>")
     with gr.Tabs():
         with gr.TabItem("Machine Translation (En -> Zh)"):
             with gr.Row():
                 with gr.Column():
+                  tr_device = gr.Radio(('CPU', 'GPU'), label='Device')
                   tr_examples = gr.Dropdown(choices=['Example 1'], label="Choose an example or paste your text")
                   translate_input = gr.Textbox(lines=20, interactive=True)
                 #gr.example
@@ -155,9 +156,11 @@ with demo:
             translate_button = gr.Button("Translate")
 
         with gr.TabItem("Summarization"):
+          with gr.Column():
+            gr.Markdown(f"<h3>Model Description</h3>{summarize_description}")
             with gr.Row():
                 with gr.Column():
-                  device = gr.Radio(('CPU', 'GPU'), label='Device')
+                  sum_device = gr.Radio(('CPU', 'GPU'), label='Device')
                   sum_examples = gr.Dropdown(choices=['Example 1'], label="Choose an example or paste your text")
                   summarize_input = gr.Textbox(lines=20, interactive=True)
                 with gr.Column():
@@ -166,9 +169,10 @@ with demo:
 
         with gr.TabItem("Code Generation"):
           with gr.Column():
-            gr.Markdown(generate_description)
+            gr.Markdown(f"<h3>Model Description</h3>{generate_description}")
             with gr.Row():
                 with gr.Column():
+                  gen_device = gr.Radio(('CPU', 'GPU'), label='Device')
                   gen_examples = gr.Dropdown(choices=['Function 1', 'Function 2'], label="Choose an example or paste your text")
                   filling_method = gr.Radio(choices=['Two Lines', 'Function'], label="Filling Method")
                   code_input = gr.Textbox(lines=20, interactive=True)
@@ -180,12 +184,11 @@ with demo:
     sum_examples.change(fn=change_textbox, inputs=sum_examples, outputs=summarize_input)
     gen_examples.change(fn=change_function, inputs=gen_examples, outputs=code_input)
 
-    translate_button.click(translate, inputs=translate_input, outputs=translate_output)
-    summarize_button.click(summarize, inputs=[summarize_input, device], outputs=summarize_output)
-    generate_button.click(generate, inputs=[code_input, filling_method], outputs=generate_output)
-
-
-
+    translate_button.click(translate, inputs=[translate_input, tr_device], outputs=translate_output)
+    summarize_button.click(summarize, inputs=[summarize_input, sum_device], outputs=summarize_output)
+    generate_button.click(generate, inputs=[code_input, filling_method, gen_device], outputs=generate_output)
+ 
+ 
 #if __name__=='main':
 demo.launch(share=True)
 
