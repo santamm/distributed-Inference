@@ -1,12 +1,12 @@
 #!/bin/bash
-
+# This script is to be used in case celery workers and gunicor are executed in the same node
 # Stop current running celery servers
 echo "Stopping celery...."
 #
-ps auxww | grep 'celery_tasks worker' | awk '{print $2}' | xargs kill -9
+ps auxww | grep 'celery_tasks worker' | grep -v grep | awk '{print $2}' | xargs kill -9
 # stop current gunicorn
 echo "Stopping gunicorn....."
-ps auxww | grep 'gunicorn' | awk '{print $2}' | xargs kill -9
+ps auxww | grep 'gunicorn' | grep -v grep | awk '{print $2}' | xargs kill -9
 sleep 2
 echo "Launch celery..."	
 # launch celery 

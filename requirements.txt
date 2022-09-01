@@ -6,3 +6,5 @@ pydantic
 uvicorn
 fastapi
 pynvml
+# to support NVIDIA 3090 platform 11.6 you need to install pytorch as follows:
+#conda install pytorch torchvision torchaudio cudatoolkit=11.6 -c pytorch -c conda-forge

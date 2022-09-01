@@ -1,4 +1,5 @@
 #!/bin/bash
+# This script is to be used in case all systems are executed on the same node
 # Launch RabbitMQ server
 echo "Starting RabbitMQ server...."
 ./start_rabbitmq.sh
