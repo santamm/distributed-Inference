@@ -1,8 +1,8 @@
-# NetMind Inference Platform
+# Distributed Inference Platform
 
 # Introduction
 
-This page describes the NetMind inference platform for serving ML models using Celery and FastAPI.
+This page describes an inference platform for serving ML models using Celery and FastAPI.
 
 Below is a summary of potential approaches for deploying (pre)trained models to production:
 
@@ -31,16 +31,16 @@ The solution is depicted below:
 
 The following API endpoints are exposed by the FastAPI application:
 
-| Method | Endpoint | Description |
-| --- | --- | --- |
-| POST | `/summarize/predict` | Submit a summarization task (DistilBART) |
-| GET | `/summarize/result/{task_id}` | Retrieve summarization result |
-| POST | `/andrea/predict` | Submit a summarization task (Andrea model) |
-| GET | `/andrea/result/{task_id}` | Retrieve Andrea summarization result |
-| POST | `/protago_translate/predict` | Submit a translation task (EN → ZH) |
-| GET | `/protago_translate/result/{task_id}` | Retrieve translation result |
-| POST | `/protago_generate/predict` | Submit a code generation task |
-| GET | `/protago_generate/result/{task_id}` | Retrieve code generation result |
+| Method | Endpoint                              | Description                                |
+| ------ | ------------------------------------- | ------------------------------------------ |
+| POST   | `/summarize/predict`                  | Submit a summarization task (DistilBART)   |
+| GET    | `/summarize/result/{task_id}`         | Retrieve summarization result              |
+| POST   | `/andrea/predict`                     | Submit a summarization task (Andrea model) |
+| GET    | `/andrea/result/{task_id}`            | Retrieve Andrea summarization result       |
+| POST   | `/protago_translate/predict`          | Submit a translation task (EN → ZH)        |
+| GET    | `/protago_translate/result/{task_id}` | Retrieve translation result                |
+| POST   | `/protago_generate/predict`           | Submit a code generation task              |
+| GET    | `/protago_generate/result/{task_id}`  | Retrieve code generation result            |
 
 All `predict` endpoints accept a JSON body with `data` (string) and `device` (`"CPU"` or `"GPU"`). The `/protago_generate/predict` endpoint additionally requires a `filling_method` field.
 
@@ -85,12 +85,12 @@ curl -d '{"data":"def HelloWorld():", "filling_method":"Function", "device":"GPU
 
 The following machines have been allocated for the test platform:
 
-| Node | Machine | Applications |
-| --- | --- | --- |
+| Node   | Machine              | Applications     |
+| ------ | -------------------- | ---------------- |
 | Node 1 | 5.tcp.ngrok.io:24565 | gunicorn, flower |
-| Node 2 | 5.tcp.ngrok.io:24556 | Redis, RabbitMQ |
-| Node 3 | 5.tcp.ngrok.io:24653 | celery workers |
-| Node 4 | 5.tcp.ngrok.io:24653 | celery workers |
+| Node 2 | 5.tcp.ngrok.io:24556 | Redis, RabbitMQ  |
+| Node 3 | 5.tcp.ngrok.io:24653 | celery workers   |
+| Node 4 | 5.tcp.ngrok.io:24653 | celery workers   |
 
 ## Shared tasks on all machines
 
@@ -110,10 +110,10 @@ conda activate netmind
 # Install libraries required by netmind
 pip install -r requirements.txt
 
-# The requirements.txt includes the following # The requirements.txt includes the following 
+# The requirements.txt includes the following # The requirements.txt includes the following
 ```
 
-The *requirements.txt* includes the following packages:
+The _requirements.txt_ includes the following packages:
 
 ```bash
 celery[eventlet]
@@ -176,14 +176,14 @@ sudo apt-get install -y erlang-base \
 sudo apt-get install rabbitmq-server -y --fix-missing
 ```
 
-Once RabbitMQ is installed, proceed to configuration for NetMind:
+Once RabbitMQ is installed, proceed to configuration:
 
 ```bash
-# Customize logging level and log directory in the configuration file 
+# Customize logging level and log directory in the configuration file
 nano /etc/rabbitmq/rabbitmq.conf
 
 # For production config, follow the guide below at: https://www.rabbitmq.com/production-checklist.html
-# list users 
+# list users
 sudo rabbitmqctl list_users
 sudo rabbitmqctl add_user netmind
 sudo rabbitmqctl set_permissions 'netmind' '.*' '.*' '.*'
@@ -252,30 +252,30 @@ redis-server --daemonize yes
 
 The log file will show:
 
-```bash
+````bash
 
 86827:C 08 Jul 2022 16:24:10.202 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
 86827:C 08 Jul 2022 16:24:10.202 # Redis version=7.0.0, bits=64, commit=00000000, modified=0, pid=86827, just started
 86827:C 08 Jul 2022 16:24:10.202 # Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf
 86827:M 08 Jul 2022 16:24:10.202 * Increased maximum number of open files to 10032 (it was originally set to 2560).
 86827:M 08 Jul 2022 16:24:10.202 * monotonic clock: POSIX clock_gettime
-                _._                                                  
-           _.-``__ ''-._                                             
+                _._
+           _.-``__ ''-._
       _.-``    `.  `_.  ''-._           Redis 7.0.0 (00000000/0) 64 bit
-  .-`` .-```.  ```\/    _.,_ ''-._                                  
+  .-`` .-```.  ```\/    _.,_ ''-._
  (    '      ,       .-`  | `,    )     Running in standalone mode
  |`-._`-...-` __...-.``-._|'` _.-'|     Port: 6379
  |    `-._   `._    /     _.-'    |     PID: 86827
-  `-._    `-._  `-./  _.-'    _.-'                                   
- |`-._`-._    `-.__.-'    _.-'_.-'|                                  
- |    `-._`-._        _.-'_.-'    |           https://redis.io       
-  `-._    `-._`-.__.-'_.-'    _.-'                                   
- |`-._`-._    `-.__.-'    _.-'_.-'|                                  
- |    `-._`-._        _.-'_.-'    |                                  
-  `-._    `-._`-.__.-'_.-'    _.-'                                   
-      `-._    `-.__.-'    _.-'                                       
-          `-._        _.-'                                           
-              `-.__.-'                                               
+  `-._    `-._  `-./  _.-'    _.-'
+ |`-._`-._    `-.__.-'    _.-'_.-'|
+ |    `-._`-._        _.-'_.-'    |           https://redis.io
+  `-._    `-._`-.__.-'_.-'    _.-'
+ |`-._`-._    `-.__.-'    _.-'_.-'|
+ |    `-._`-._        _.-'_.-'    |
+  `-._    `-._`-.__.-'_.-'    _.-'
+      `-._    `-.__.-'    _.-'
+          `-._        _.-'
+              `-.__.-'
 
 86827:M 08 Jul 2022 16:24:10.204 # WARNING: The TCP backlog setting of 511 cannot be enforced because kern.ipc.somaxconn is set to the lower value of 128.
 86827:M 08 Jul 2022 16:24:10.204 # Server initialized
@@ -286,7 +286,7 @@ The log file will show:
 86827:M 08 Jul 2022 16:24:10.204 * Done loading RDB, keys loaded: 37, keys expired: 0.
 86827:M 08 Jul 2022 16:24:10.204 * DB loaded from disk: 0.000 seconds
 86827:M 08 Jul 2022 16:24:10.204 * Ready to accept connections
-```
+````
 
 ## Celery workers
 
@@ -299,12 +299,12 @@ nvidia-smi
 # Cuda support
 conda install pytorch torchvision torchaudio cudatoolkit=11.6 -c pytorch -c conda-forge
 
-# deploy netmind (this does not include the model large files that have to be downloaded from AWS repository)
-git clone git@github.com:santamm/netmind-inference.git
+# deploy the platform (this does not include the model large files that have to be downloaded from AWS repository)
+git clone git@github.com:santamm/distributed-inference.git
 
 # REPEAT FOR ALL MODELS!!
 # download model large file from AWS repository
-cd netmind-inference/celery_tasks/ml_models/protago-codegen
+cd distributed-inference/celery_tasks/ml_models/protago-codegen
 # this is for code generation model
 aws s3 cp s3://gpt-genji/gptj/saved_model/ ./saved_model --recursive
 ```
@@ -312,7 +312,7 @@ aws s3 cp s3://gpt-genji/gptj/saved_model/ ./saved_model --recursive
 For each model deployed make sure their additional requirements are installed:
 
 ```jsx
-cd netmind-inference/celery_tasks/ml_models/model-1
+cd distributed-inference/celery_tasks/ml_models/model-1
 pip install -r requirements.txt
 ```
 
@@ -343,13 +343,13 @@ ps -ef | grep celery
 tail -f celery.log
 ```
 
-In the script above you can notice that the *Summarization* and *Generation* tasks are running on separate python virtual environments.
+In the script above you can notice that the _Summarization_ and _Generation_ tasks are running on separate python virtual environments.
 
 Moreover, it is a good practice to assign different queues/workers to CPU and GPU tasks to avoid models being moved from CPU→GPU and GPU→CPU continously.
 
 ## API Server (gunicorn)
 
-We use *gunicorn* as FastAPI server. 
+We use _gunicorn_ as FastAPI server.
 
 Unicorn is an ASGI web server implementation for Python.
 
@@ -374,7 +374,7 @@ gunicorn app:api -w 1 -k uvicorn.workers.UvicornWorker --daemon --error-logfile 
 
 ## Celery workers
 
-The celery configuration is stored in the *[celeryconfig.py](http://celeryconfig.py)* file that is deployed on the celery servers and the api servers (to allow for task dispatching to queues):
+The celery configuration is stored in the _[celeryconfig.py](http://celeryconfig.py)_ file that is deployed on the celery servers and the api servers (to allow for task dispatching to queues):
 
 ```python
 # RabbitMQ, use local or global address depending on networking
@@ -408,7 +408,7 @@ task_routes = {
 A sample of a project deployment is depicted below:
 
 ```
-netmind_inference
+distributed_inference
 │   app.py
 │   gui.py
 │   requirements.txt
@@ -433,26 +433,26 @@ netmind_inference
               (each model dir contains model.py + weights file)
 ```
 
-- *celery_tasks/tasks_cpu.py:* Celery task definitions assigned to execution on CPU
-- *celery_tasks/tasks_gpu.py:* Celery task definitions assigned to execution on GPU
-- *celery_tasks/celery.py:* Defines the celery app instance and loads the config.
-- *celery_tasks/celeryconfig.py:* Configuration file for queues/tasks, message broker and results store
-- *celery_tasks/ml_models/<model>/model.py:* ML model wrapper class used to load the pretrained model and serve predictions
-- *celery_tasks/ml_models/<model>/pytorch_model.bin:* Pre-trained weights file (format may vary per model)
+- _celery_tasks/tasks_cpu.py:_ Celery task definitions assigned to execution on CPU
+- _celery_tasks/tasks_gpu.py:_ Celery task definitions assigned to execution on GPU
+- _celery_tasks/celery.py:_ Defines the celery app instance and loads the config.
+- _celery_tasks/celeryconfig.py:_ Configuration file for queues/tasks, message broker and results store
+- _celery_tasks/ml_models/<model>/model.py:_ ML model wrapper class used to load the pretrained model and serve predictions
+- _celery_tasks/ml_models/<model>/pytorch_model.bin:_ Pre-trained weights file (format may vary per model)
 
 ## Startup Scripts
 
 Several convenience scripts are provided to start and stop the platform components:
 
-| Script | Description |
-| --- | --- |
-| `start_local.sh` | Starts all components (RabbitMQ, Redis, Celery, gunicorn) on a **single node** |
-| `start_all.sh` | Starts Celery workers and gunicorn together (when broker/Redis are already running) |
-| `start_celery.sh` | Starts Celery workers only (CPU and GPU queues) |
-| `start_api.sh` | Starts the gunicorn/FastAPI server only |
-| `start_rabbitmq.sh` | Starts the RabbitMQ broker |
-| `start_redis.sh` | Starts the Redis result backend |
-| `stop_celery.sh` | Stops all running Celery workers |
+| Script              | Description                                                                         |
+| ------------------- | ----------------------------------------------------------------------------------- |
+| `start_local.sh`    | Starts all components (RabbitMQ, Redis, Celery, gunicorn) on a **single node**      |
+| `start_all.sh`      | Starts Celery workers and gunicorn together (when broker/Redis are already running) |
+| `start_celery.sh`   | Starts Celery workers only (CPU and GPU queues)                                     |
+| `start_api.sh`      | Starts the gunicorn/FastAPI server only                                             |
+| `start_rabbitmq.sh` | Starts the RabbitMQ broker                                                          |
+| `start_redis.sh`    | Starts the Redis result backend                                                     |
+| `stop_celery.sh`    | Stops all running Celery workers                                                    |
 
 For a **single-node** local deployment, run:
 
@@ -464,7 +464,7 @@ For a **multi-node** deployment, run `start_celery.sh` on the worker nodes and `
 
 ## FastAPI
 
-We use FastAPI to send requests to execute a task (assuming we know the task name exposed in the *tasks_gpu.py or tasks_cpu.py* files). The following snipped is included in the *[app.py](http://app.py)* file that defines the FastAPI interface: 
+We use FastAPI to send requests to execute a task (assuming we know the task name exposed in the _tasks_gpu.py or tasks_cpu.py_ files). The following snipped is included in the _[app.py](http://app.py)_ file that defines the FastAPI interface:
 
 ```bash
 app = Celery()
@@ -488,7 +488,7 @@ async def translate(payload: Payload):
     return {'task_id': str(task_id), 'status': 'Processing'}
 ```
 
-The results for the submitted task can then be retrieved asynchronously with the following code, assuming we know the *task_id* generated when the request was submitted:
+The results for the submitted task can then be retrieved asynchronously with the following code, assuming we know the _task_id_ generated when the request was submitted:
 
 ```python
 class TextGeneration(BaseModel):
@@ -497,7 +497,7 @@ class TextGeneration(BaseModel):
     status: str
     result: str
 
-@api.get('/protago_translate/result/{task_id}', response_model=TextGeneration, status_code=200, 
+@api.get('/protago_translate/result/{task_id}', response_model=TextGeneration, status_code=200,
   responses={202: {'model': Task, 'description': 'Accepted: Not Ready'}})
 async def translate_result(task_id: str):
     """Fetch result for given task_id"""
@@ -530,8 +530,6 @@ This share link expires in 72 hours. For free permanent hosting, check out Space
 
 The app will show the following GUI, where you can test the models deployed:
 
- 
-
 ![netmind-gradio.png](netmind-gradio.png)
 
 # Further Developments
@@ -559,7 +557,7 @@ taskid = netmind_inference("The goal of life is [MASK].", model_id, api_token)
 def netmind_retrieve(task_id, model_id, api_token):
 	headers = {"Authorization": f"Bearer {api_token}"}
 	API_URL = f"https://api-inference.netmind.com/models/result/{model_id}"
-	
+
 	attempts = 0
 	result = None
 	while attempts < max_attempts:
@@ -595,24 +593,24 @@ A full description and implementation of this approach can be found [here](https
 
 # References
 
-[*Celery - Distributed Task Queue](https://docs.celeryq.dev/en/stable/).*
+[\*Celery - Distributed Task Queue](https://docs.celeryq.dev/en/stable/).\*
 
-[*RabbitMQ is the most widely deployed open source message broker](https://www.rabbitmq.com/).*
+[\*RabbitMQ is the most widely deployed open source message broker](https://www.rabbitmq.com/).\*
 
-[*Serving ML Models in Production with FastAPI and Celery](https://towardsdatascience.com/deploying-ml-models-in-production-with-fastapi-and-celery-7063e539a5db).*
+[\*Serving ML Models in Production with FastAPI and Celery](https://towardsdatascience.com/deploying-ml-models-in-production-with-fastapi-and-celery-7063e539a5db).\*
 
-[*Scaling Celery workers with RabbitMQ on Kubernetes](https://learnk8s.io/scaling-celery-rabbitmq-kubernetes).*
+[\*Scaling Celery workers with RabbitMQ on Kubernetes](https://learnk8s.io/scaling-celery-rabbitmq-kubernetes).\*
 
-[*Redis: a vibrant, open source database.*](https://redis.io/)
+[_Redis: a vibrant, open source database._](https://redis.io/)
 
-*[Kubernetes Event-driven Autoscaling](https://keda.sh/).*
+_[Kubernetes Event-driven Autoscaling](https://keda.sh/)._
 
-[*Scaling Celery - Sending Tasks To Remote Machines*](https://avilpage.com/2014/11/scaling-celery-sending-tasks-to-remote.html#)
+[_Scaling Celery - Sending Tasks To Remote Machines_](https://avilpage.com/2014/11/scaling-celery-sending-tasks-to-remote.html#)
 
-[*Flower: Real-time Celery web-monitor*](https://docs.celeryq.dev/en/stable/userguide/monitoring.html#id8)
+[_Flower: Real-time Celery web-monitor_](https://docs.celeryq.dev/en/stable/userguide/monitoring.html#id8)
 
-*[Separating Celery application and worker in Docker containers](https://medium.com/@tanchinhiong/separating-celery-application-and-worker-in-docker-containers-f70fedb1ba6d)*
+_[Separating Celery application and worker in Docker containers](https://medium.com/@tanchinhiong/separating-celery-application-and-worker-in-docker-containers-f70fedb1ba6d)_
 
-*[An ASGI web server, for Python.](https://www.uvicorn.org/)*
+_[An ASGI web server, for Python.](https://www.uvicorn.org/)_
 
-*[Use of Celery in Serverless systems for scaling AI workloads](https://ignitarium.com/use-of-celery-in-serverless-systems-forscaling-ai-workloads/)*
+_[Use of Celery in Serverless systems for scaling AI workloads](https://ignitarium.com/use-of-celery-in-serverless-systems-forscaling-ai-workloads/)_
