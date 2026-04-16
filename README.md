@@ -29,12 +29,28 @@ The solution is depicted below:
 5. Once a prediction has been generated the result is stored using the Celery backend (Redis).
 6. At any point after step 3 the client can begin to poll the FastAPI results endpoint using the unique task id. Once the prediction is ready it will be returned to the client.
 
+The following API endpoints are exposed by the FastAPI application:
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| POST | `/summarize/predict` | Submit a summarization task (DistilBART) |
+| GET | `/summarize/result/{task_id}` | Retrieve summarization result |
+| POST | `/andrea/predict` | Submit a summarization task (Andrea model) |
+| GET | `/andrea/result/{task_id}` | Retrieve Andrea summarization result |
+| POST | `/protago_translate/predict` | Submit a translation task (EN → ZH) |
+| GET | `/protago_translate/result/{task_id}` | Retrieve translation result |
+| POST | `/protago_generate/predict` | Submit a code generation task |
+| GET | `/protago_generate/result/{task_id}` | Retrieve code generation result |
+
+All `predict` endpoints accept a JSON body with `data` (string) and `device` (`"CPU"` or `"GPU"`). The `/protago_generate/predict` endpoint additionally requires a `filling_method` field.
+
 Below an example of the FastAPI call to submit a prediction task:
 
 ```bash
-# Here shell API call to submit a request
-
-curl -d '{"data":"I have been waiting for netmind.ai my whole life", "device":"GPU"}' -H "Content-Type: application/json" -X POST http://127.0.0.1:8000/summarize/predict
+# Submit a summarization request
+curl -d '{"data":"I have been waiting for netmind.ai my whole life", "device":"GPU"}' \
+     -H "Content-Type: application/json" \
+     -X POST http://127.0.0.1:8000/summarize/predict
 ```
 
 That will return:
@@ -46,13 +62,21 @@ That will return:
 And an API call to retrieve the result from a task:
 
 ```bash
-curl http://localhost:8000/andrea/result/57717eec-6202-41fa-95e2-9e05f0b7b2e9
+curl http://localhost:8000/summarize/result/57717eec-6202-41fa-95e2-9e05f0b7b2e9
 ```
 
 And the result returned is:
 
 ```bash
 {"task_id":"57717eec-6202-41fa-95e2-9e05f0b7b2e9","status":"Success","result":"Netmind.ai is a web-based search engine powered by a unique algorithm developed by a team of computer scientists known as the \"Netminders\", who search the web for the most interesting content. The algorithm is based on a unique combination of machine learning and advanced computer vision. To search the internet, the netminders use a combination of computer vision and advanced human intelligence, called \"netmind\" to search for content."}
+```
+
+Example for code generation (note the extra `filling_method` field):
+
+```bash
+curl -d '{"data":"def HelloWorld():", "filling_method":"Function", "device":"GPU"}' \
+     -H "Content-Type: application/json" \
+     -X POST http://127.0.0.1:8000/protago_generate/predict
 ```
 
 # Installation
@@ -63,7 +87,7 @@ The following machines have been allocated for the test platform:
 
 | Node | Machine | Applications |
 | --- | --- | --- |
-| None 1 | 5.tcp.ngrok.io:24565 | guinicorn, flower |
+| Node 1 | 5.tcp.ngrok.io:24565 | gunicorn, flower |
 | Node 2 | 5.tcp.ngrok.io:24556 | Redis, RabbitMQ |
 | Node 3 | 5.tcp.ngrok.io:24653 | celery workers |
 | Node 4 | 5.tcp.ngrok.io:24653 | celery workers |
@@ -100,6 +124,7 @@ pydantic
 uvicorn
 fastapi
 pynvml
+gradio       # required for the test GUI (gui.py)
 ```
 
 ## RabbitMQ
@@ -303,8 +328,7 @@ sleep 2
 
 conda run -n summarize celery -A celery_tasks worker -P eventlet -Q Summarization_cpu -l INFO --detach --logfile celery.log &
 celery -A celery_tasks worker -P eventlet -Q Translation_cpu -l INFO --detach --logfile celery.log &
-conda run -n codegen celery -A 
-celery_tasks worker -P eventlet -Q Generation_cpu -l INFO --detach --logfile celery.log &
+conda run -n codegen celery -A celery_tasks worker -P eventlet -Q Generation_cpu -l INFO --detach --logfile celery.log &
 # default queue
 celery -A celery_tasks worker -P prefork -Q celery -l INFO --detach --logfile celery.log &
 
@@ -383,33 +407,60 @@ task_routes = {
 
 A sample of a project deployment is depicted below:
 
-```jsx
+```
 netmind_inference
+│   app.py
+│   gui.py
+│   requirements.txt
+│   start_all.sh
+│   start_api.sh
+│   start_celery.sh
+│   start_local.sh
+│   stop_celery.sh
 │
-├───celery_tasks
-│   │   tasks_cpu.py
-│   │   tasks_gpu.py
-│   │   celery.py
-│   │   celeryconfig.py
-│   │   __init__.py
-│   │
-│   ├───ml_models
-│   │   ├─── model-1
-|   |   |   | model.py
-|   |   |   | pytorch_model.bin
-|   |   |   | .... 
-│   │   ├─── model-2
-|   |   |   . . . . . 
-|   │   ├─── model-n
-|   |   |   . . . . . 
+└───celery_tasks
+    │   tasks_cpu.py
+    │   tasks_gpu.py
+    │   celery.py
+    │   celeryconfig.py
+    │   __init__.py
+    │
+    └───ml_models
+        ├─── andrea-summarization
+        ├─── distilbart-cnn-12-6
+        ├─── protago-codegen
+        └─── protago-translator
+              (each model dir contains model.py + weights file)
 ```
 
-- *celery_tasks/tasks_cpu.py:*  celery task definitions, sassigned to execution on cpu
-- *celery_tasks/tasks_cpu.py: c*elery task definitions, assigned to execution on gpu
-- *celery_tasks/celery.py:* Defines the celery app instance and loads the config.
-- *celery_tasks/celeryconfig.py:* configuration file for queues/tasks, message broker and results store
-- *celery_tasks/ml_models/<model-x>/model.py:* Machine learning models wrapper classese used to load pretrained models and serve predictions.
-- *celery_tasks/ml_models/<model-x>/pytorch_model.bin:* Machine learning pre-trained file (can be different format)
+- *celery_tasks/tasks_cpu.py:* Celery task definitions assigned to execution on CPU
+- *celery_tasks/tasks_gpu.py:* Celery task definitions assigned to execution on GPU
+- *celery_tasks/celery.py:* Defines the celery app instance and loads the config.
+- *celery_tasks/celeryconfig.py:* Configuration file for queues/tasks, message broker and results store
+- *celery_tasks/ml_models/<model>/model.py:* ML model wrapper class used to load the pretrained model and serve predictions
+- *celery_tasks/ml_models/<model>/pytorch_model.bin:* Pre-trained weights file (format may vary per model)
+
+## Startup Scripts
+
+Several convenience scripts are provided to start and stop the platform components:
+
+| Script | Description |
+| --- | --- |
+| `start_local.sh` | Starts all components (RabbitMQ, Redis, Celery, gunicorn) on a **single node** |
+| `start_all.sh` | Starts Celery workers and gunicorn together (when broker/Redis are already running) |
+| `start_celery.sh` | Starts Celery workers only (CPU and GPU queues) |
+| `start_api.sh` | Starts the gunicorn/FastAPI server only |
+| `start_rabbitmq.sh` | Starts the RabbitMQ broker |
+| `start_redis.sh` | Starts the Redis result backend |
+| `stop_celery.sh` | Stops all running Celery workers |
+
+For a **single-node** local deployment, run:
+
+```bash
+./start_local.sh
+```
+
+For a **multi-node** deployment, run `start_celery.sh` on the worker nodes and `start_api.sh` on the API node, after the broker and Redis are running on Node 2.
 
 ## FastAPI
 
